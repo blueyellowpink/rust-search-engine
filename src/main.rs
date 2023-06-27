@@ -1,4 +1,4 @@
-use std::{fs, io, path::Path};
+use std::{error::Error, fs, io, path::Path, process::ExitCode};
 
 use xml::reader::{EventReader, XmlEvent};
 
@@ -17,7 +17,7 @@ fn read_xml_file<P: AsRef<Path>>(file_path: P) -> io::Result<String> {
     Ok(content)
 }
 
-fn main() {
+fn run() -> Result<(), Box<dyn Error>> {
     let dir_path = "docs.gl/test";
     let dirs = fs::read_dir(dir_path).unwrap();
     let mut tf_index = TermFreqIndex::new();
@@ -62,4 +62,13 @@ fn main() {
     result.reverse();
 
     println!("{result:?}");
+
+    Ok(())
+}
+
+fn main() -> ExitCode {
+    match run() {
+        Ok(_) => ExitCode::SUCCESS,
+        Err(_) => ExitCode::FAILURE,
+    }
 }
