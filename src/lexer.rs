@@ -1,5 +1,3 @@
-use crate::TermFreq;
-
 #[derive(Debug)]
 pub struct Lexer<'lexer> {
     content: &'lexer [char],

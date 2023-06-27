@@ -2,7 +2,7 @@ use std::{fs, io, path::Path};
 
 use xml::reader::{EventReader, XmlEvent};
 
-use rust_search_engine::{calculate_tf, lexer::Lexer, TermFreq, TermFreqIndex};
+use rust_search_engine::{idf, lexer::Lexer, tf, TermFreq, TermFreqIndex};
 
 fn read_xml_file<P: AsRef<Path>>(file_path: P) -> io::Result<String> {
     let file = fs::File::open(file_path)?;
@@ -43,17 +43,20 @@ fn main() {
         tf_index.insert(file_path, tf);
     }
 
-    let query = &"name shader".chars().collect::<Vec<_>>();
+    let query = &"name, to shader active program".chars().collect::<Vec<_>>();
     let mut result = Vec::<(&Path, f32)>::new();
-    for (path, tf) in tf_index.iter() {
-        println!("{path:?} has {count} unique indexes", count = tf.len());
+    for (path, term_freq) in tf_index.iter() {
+        println!(
+            "{path:?} has {count} unique indexes",
+            count = term_freq.len()
+        );
 
-        let mut total_tf = 0f32;
+        let mut rank = 0f32;
         for token in Lexer::new(query) {
-            total_tf += calculate_tf(&token, &tf);
+            rank += tf(&token, &term_freq) * idf(&token, &tf_index);
         }
 
-        result.push((&path, total_tf));
+        result.push((&path, rank));
     }
     result.sort_by(|(_, x), (_, y)| x.partial_cmp(y).unwrap());
     result.reverse();
