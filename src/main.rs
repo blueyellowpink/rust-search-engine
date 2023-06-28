@@ -17,7 +17,7 @@ fn read_xml_file<P: AsRef<Path>>(file_path: P) -> io::Result<String> {
     Ok(content)
 }
 
-fn run() -> Result<(), Box<dyn Error>> {
+fn index() -> TermFreqIndex {
     let dir_path = "docs.gl/test";
     let dirs = fs::read_dir(dir_path).unwrap();
     let mut tf_index = TermFreqIndex::new();
@@ -42,8 +42,13 @@ fn run() -> Result<(), Box<dyn Error>> {
 
         tf_index.insert(file_path, tf);
     }
+    tf_index
+}
 
-    let query = &"name, to shader active program".chars().collect::<Vec<_>>();
+fn run(query: &str) -> Result<(), Box<dyn Error>> {
+    let query = &query.chars().collect::<Vec<_>>();
+    let tf_index = index();
+
     let mut result = Vec::<(&Path, f32)>::new();
     for (path, term_freq) in tf_index.iter() {
         println!(
@@ -67,7 +72,7 @@ fn run() -> Result<(), Box<dyn Error>> {
 }
 
 fn main() -> ExitCode {
-    match run() {
+    match run("name, to shader active program") {
         Ok(_) => ExitCode::SUCCESS,
         Err(_) => ExitCode::FAILURE,
     }
