@@ -1,4 +1,10 @@
-use std::{error::Error, fs, io, path::Path, process::ExitCode};
+use std::{
+    error::Error,
+    fs,
+    io::{self, BufReader},
+    path::Path,
+    process::ExitCode,
+};
 
 use xml::reader::{EventReader, XmlEvent};
 
@@ -6,6 +12,7 @@ use rust_search_engine::{idf, lexer::Lexer, tf, TermFreq, TermFreqIndex};
 
 fn read_xml_file<P: AsRef<Path>>(file_path: P) -> io::Result<String> {
     let file = fs::File::open(file_path)?;
+    let file = BufReader::new(file);
     let event_reader = EventReader::new(file);
     let mut content = String::new();
     for event in event_reader.into_iter() {
