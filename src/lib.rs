@@ -2,17 +2,23 @@ use std::{collections::HashMap, path::PathBuf};
 
 pub mod lexer;
 
+pub type DocFreq = HashMap<String, usize>;
 pub type TermFreq = HashMap<String, usize>;
-pub type TermFreqIndex = HashMap<PathBuf, TermFreq>;
+pub type TermFreqIndex = HashMap<PathBuf, (TermFreq, usize)>;
 
-pub fn tf(t: &str, d: &TermFreq) -> f32 {
-    let a = d.get(t).cloned().unwrap_or(0) as f32;
-    let b = d.iter().map(|(_, f)| *f).sum::<usize>() as f32;
-    a / b
+pub struct SearchEngine {
+    pub index: TermFreqIndex,
+    pub df: DocFreq,
 }
 
-pub fn idf(t: &str, d: &TermFreqIndex) -> f32 {
-    let total_doc = d.len() as f32;
-    let count = d.values().filter(|tf| tf.contains_key(t)).count().max(1) as f32;
-    (total_doc / count).log10()
+pub fn compute_tf(t: &str, d: &TermFreq, n: usize) -> f32 {
+    let n = n as f32;
+    let freq = d.get(t).cloned().unwrap_or(0) as f32;
+    freq / n
+}
+
+pub fn compute_idf(t: &str, df: &DocFreq, n: usize) -> f32 {
+    let n = n as f32;
+    let count = df.get(t).cloned().unwrap_or(1) as f32;
+    (n / count).log10()
 }
